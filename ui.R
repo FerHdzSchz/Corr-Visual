@@ -1,54 +1,46 @@
 
-# This is the user-interface definition of a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
-library(shiny)
 library(shinydashboard)
-library(corrplot)
 
-shinyUI(dashboardPage(
-
-  # Application title
-  dashboardHeader   (title = "Corr Visualization"),
-
-  # Sidebar with a slider input for number of bins
-  
+ui <- dashboardPage(
+  dashboardHeader(title = "Correlation Analysis"),
   dashboardSidebar(
-                
-    # Copy the line below to make a file upload manager
-                fileInput("file", label = h3("CSV File input")),            
-    #Drop Down menu
-    
-                selectInput("selectordering", label = h3("Ordering"), 
-                    choices = list("Ordered Eigenvectors" = "AOE", 
-                                   "First Principal Component" = "FPC", 
-                                   "Hierarchical Clustering" = "hclust",
-                                   "Original" = "original"), 
-                    selected = 1),
-           
-  
-    
-    # Cond panel          
-                conditionalPanel(
-                  
-                  condition = "input.selectordering == 'hclust' ",
-                       
-                  sliderInput("bins",
-                            "Number of bins:",
-                            min = 1,
-                            max = 9,
-                            value = 5))
-        
-    ),
-
-    # Show a plot of the generated distribution
-    dashboardBody(
-      fluidRow( 
-        box(plotOutput("distPlot"),width = 600, title = "Correlation"
+    ## Sidebar content
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Data", tabName = "datainput", icon = icon("folder")),
+        menuItem("Explore", tabName = "corr", icon = icon("cog"))
       )
-    ))
+    )
+  ),
+  ## Body content
+  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "datainput",
+              h2("This is the data loading and varibale selection screen."),
+              
+              fluidRow(
+                
+                box(fileInput("file", label = "CSV File input", 
+                              accept= ('.csv')) , 
+                    
+                    conditionalPanel (condition= "!output.fileUploaded",
+                                      p('You have not selected a file.')),
+                
+                    conditionalPanel (condition= "output.fileUploaded",
+                                      selectInput("varnames", label = "Variables to use", "", multiple = T))
+                    ),
+                box (p("In this section you choose the files and variables you want to analize."))
+                )
+              ),
+      # Second tab content
+      tabItem(tabName = "corr",
+              h2("This is the visualization screen"),
+              box(conditionalPanel(condition= "!output.fileUploaded",
+                               h1('You have not selected a file.')))
+          
+              )
+              )
+              )
   )
-)
+
